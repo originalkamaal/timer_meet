@@ -21,22 +21,20 @@ class HomeScreen extends StatelessWidget {
           width: 100,
         ),
         actions: [
-          Container(
-            child: IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () {
-                showAlertDialog(context, "Start Meeting", "Are you sure?", () {
-                  Navigator.pop(context);
-                }, () async {
-                  Navigator.pop(context);
-                  String reference = await MeetController().createMeeting();
-                  if (reference != "") {
-                    Navigator.of(context)
-                        .pushNamed("/activeMeeting", arguments: reference);
-                  }
-                });
-              },
-            ),
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              showAlertDialog(context, "Start Meeting", "Are you sure?", () {
+                Navigator.pop(context);
+              }, () async {
+                Navigator.pop(context);
+                String reference = await MeetController.createMeeting(context);
+                // if (reference != "") {
+                //   Navigator.of(context)
+                //       .pushNamed("/activeMeeting", arguments: reference);
+                // }
+              });
+            },
           ),
           Container(
             padding: const EdgeInsets.only(right: 10),

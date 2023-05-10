@@ -6,6 +6,7 @@ class Meeting {
   String? hostEmail;
   String? hostPhotoUrl;
   int? endedOn;
+  List<Participants>? participants;
 
   int? startedAt;
   String? status;
@@ -23,11 +24,16 @@ class Meeting {
       this.hostPhotoUrl,
       this.latestTimer,
       this.timers,
+      this.participants,
       this.endedOn,
       this.meetingLog});
 
   Meeting fromJSON(Map<Object?, Object?> meetingMap, String meetingId) {
     Meeting meeting = Meeting(
+        participants: meetingMap.containsKey('users')
+            ? Participants.fromJSON(
+                meetingMap['users'] as Map<Object?, Object?>)
+            : null,
         meetingId: meetingId,
         host: (meetingMap['hostEmail'] as String) ==
                 FirebaseAuth.instance.currentUser!.email
@@ -105,9 +111,47 @@ class MeetingLogType {
 }
 
 class Participants {
-  String? name;
-  String? email;
-  String? type;
+  String name;
+  String email;
+  String uid;
+  int joinedAt;
+  int? leftAt;
+  String photoURL;
+  Participants(
+      {required this.name,
+      required this.email,
+      required this.uid,
+      required this.joinedAt,
+      this.leftAt,
+      required this.photoURL});
+
+  static List<Participants> fromJSON(Map<Object?, Object?> participantsMap) {
+    List<Participants> participants = [];
+    participantsMap.forEach((key, value) {
+      value = value as Map<Object?, Object?>;
+
+      participants.add(Participants(
+          name: value['username'] as String,
+          email: value['email'] as String,
+          uid: value['uid'] as String,
+          joinedAt: value['joinedAt'] as int,
+          photoURL: value['profile'] as String,
+          leftAt: value['leftAt'] as int));
+    });
+    // participantsMap.map(
+    //   // (e) {
+    //   //   participants.add(Participants(
+    //   //       name: e['email'],
+    //   //       email: e['timeStamp'],
+    //   //       uid: e['uid'],
+    //   //       joinedAt: e['joinedAt'],
+    //   //       leftAt: e['leftAt'],
+    //   //       photoURL: e['photoUrl']));
+    //   // },
+    // ).toList();
+
+    return participants;
+  }
 }
 
 class MeetingTimer {

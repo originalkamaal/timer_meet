@@ -7,20 +7,20 @@ import '../models/meeting_model.dart';
 Widget meetingCard({required Meeting? meeting, required context}) {
   MeetController().getAllMeeting();
   return Container(
-    padding: EdgeInsets.only(top: 20),
+    padding: const EdgeInsets.only(top: 20),
     child: Row(
       children: [
         Visibility(
           visible: meeting!.host == "You",
           child: CircleAvatar(
               minRadius: 30,
-              backgroundImage: NetworkImage(meeting!.hostPhotoUrl!)),
+              backgroundImage: NetworkImage(meeting.hostPhotoUrl!)),
         ),
         Expanded(
           child: Card(
-            margin: meeting!.host == "You"
-                ? EdgeInsets.only(left: 10)
-                : EdgeInsets.only(right: 10),
+            margin: meeting.host == "You"
+                ? const EdgeInsets.only(left: 10)
+                : const EdgeInsets.only(right: 10),
             elevation: 3,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -35,7 +35,7 @@ Widget meetingCard({required Meeting? meeting, required context}) {
                       children: [
                         Text(
                           meeting.host ?? "Someone",
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         Text(
@@ -59,13 +59,13 @@ Widget meetingCard({required Meeting? meeting, required context}) {
                                   fontSize: 12,
                                   color: Colors.grey.shade700.withOpacity(0.7)),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               width: 40,
                             ),
                             meeting.endedOn == null
-                                ? Text("Live")
+                                ? const Text("Live")
                                 : Text(
-                                    "Duration: ${MeetController().timeDifference(meeting!.startedAt!, meeting.endedOn!).toString()}",
+                                    "Duration: ${MeetController().timeDifference(meeting.startedAt!, meeting.endedOn!).toString()}",
                                     style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey.shade700
@@ -102,14 +102,13 @@ Widget meetingCard({required Meeting? meeting, required context}) {
                               color: Colors.deepPurple.shade900,
                               fontWeight: FontWeight.bold),
                         ),
-                        onTap: () {
-                          meeting.status == "ACTIVE"
-                              ? Navigator.of(context).pushNamed(
-                                  "/activeMeeting",
-                                  arguments: meeting.meetingId!)
-                              : Navigator.of(context).pushNamed(
-                                  "/meetingDetail",
-                                  arguments: meeting.meetingId!);
+                        onTap: () async {
+                          if (meeting.status == "ACTIVE") {
+                            await MeetController.joinMeeting(
+                                context: context, meet: meeting.meetingId!);
+                          } else {
+                            Navigator.of(context).pushNamed("/meetingDetail");
+                          }
                         },
                       )
                     ],
@@ -120,10 +119,10 @@ Widget meetingCard({required Meeting? meeting, required context}) {
           ),
         ),
         Visibility(
-          visible: meeting!.host != "You",
+          visible: meeting.host != "You",
           child: CircleAvatar(
               minRadius: 30,
-              backgroundImage: NetworkImage(meeting!.hostPhotoUrl!)),
+              backgroundImage: NetworkImage(meeting.hostPhotoUrl!)),
         ),
       ],
     ),

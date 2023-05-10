@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:timer_meet/controllers/meet_controller.dart';
 import 'package:timer_meet/models/meeting_model.dart';
 import 'package:timer_meet/widgets/error_text.dart';
@@ -99,18 +100,21 @@ class _ActiveMeetingState extends State<ActiveMeeting> {
                             " ${meeting.host! == "You" ? "are" : "is"} hosting.."),
                       ],
                     ),
-                    TextButton(
-                      onPressed: () async {
-                        await MeetController().endTimer(meeting);
-                        await MeetController()
-                            .closeMeeting(meetingId: widget.referance);
-                      },
-                      child: const Text("End Meeting"),
+                    Visibility(
+                      visible: meeting.host! == "You",
+                      child: TextButton(
+                        onPressed: () async {
+                          await MeetController().endTimer(meeting);
+                          await MeetController()
+                              .closeMeeting(meetingId: widget.referance);
+                        },
+                        child: const Text("End Meeting"),
+                      ),
                     )
                   ],
                 ),
               ),
-              meeting.latestTimer != null &&
+              (meeting.latestTimer != null &&
                       meeting.latestTimer!.status != 'ENDED'
                   ? Container(
                       width: double.infinity,
@@ -222,7 +226,36 @@ class _ActiveMeetingState extends State<ActiveMeeting> {
                             ),
                           ]),
                     )
-                  : Container()
+                  : Container()),
+              Column(
+                children: meeting.participants != null
+                    ? meeting.participants!
+                        .map((e) => Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  radius: 25,
+                                  child: ClipOval(
+                                      child: Image.network(e.photoURL)),
+                                ),
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(e.name),
+                                    Text(DateFormat.jm().format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                            e.joinedAt)))
+                                  ],
+                                ),
+                                subtitle: Text(e.email),
+                              ),
+                            ))
+                        .toList()
+                    : [],
+              )
+
               // Container(
               //   padding: EdgeInsets.only(left: 10),
               //   height: 20,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
 import 'package:timer_meet/models/meeting_model.dart';
 
 class MeetController {
@@ -9,9 +10,9 @@ class MeetController {
   static FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
   static User? user = FirebaseAuth.instance.currentUser;
 
-  Future<String> createMeeting() async {
+  static Future<String> createMeeting(BuildContext context) async {
     DatabaseReference? refs = _database.ref("meetings").push();
-    String meetingId = await refs.set({
+    await refs.set({
       "startedAt": DateTime.now().millisecondsSinceEpoch,
       "host": _auth.currentUser!.displayName,
       "hostEmail": _auth.currentUser!.email,
@@ -26,6 +27,7 @@ class MeetController {
       "timers": [],
       "status": "ACTIVE"
     }).then((value) {
+      joinMeeting(context: context, meet: refs.key!);
       return "";
     }).catchError((e) {
       return "";
@@ -70,7 +72,7 @@ class MeetController {
       "status": "PAUSED",
       "host": _auth.currentUser!.displayName,
       "hostEmail": _auth.currentUser!.email,
-      "createdOn": DateTime.now().microsecondsSinceEpoch
+      "createdOn": DateTime.now().millisecondsSinceEpoch
     }).onError((error, stackTrace) => print(error));
   }
 
@@ -127,5 +129,21 @@ class MeetController {
           .child("status")
           .set("ENDED");
     }
+  }
+
+  static joinMeeting(
+      {required BuildContext context, required String meet}) async {
+    DatabaseReference reference =
+        await _database.ref("meetings").child(meet).child("users").push();
+    await reference.set({
+      "uid": user!.uid,
+      "username": user!.displayName,
+      "email": user!.email,
+      "profile": user!.photoURL,
+      "joinedAt": DateTime.now().millisecondsSinceEpoch,
+      "leftAt": 0
+    }).then((value) {
+      Navigator.of(context).pushNamed("/activeMeeting", arguments: meet);
+    });
   }
 }
